@@ -2,12 +2,62 @@
 <html lang="en">
 <head>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script type="text/babel" >
         "use strict";
+
+        let socket;
+        let totalScore;
+
+        let userScore = 0;
+        let userScoreInc = 5;
+        let userScoreIncElement;
+        let userScoreElement;
+
+        const generateScore = () => {
+            userScore += userScoreInc;
+            userScoreElement.innerText = userScore;
+            userScoreIncElement.innerText = userScoreInc;
+            
+            socket.emit("updateScores", userScoreInc);
+        }
+        
+        const update = (data) => {
+            totalScore.innerText = data;
+        }
+        
+        const incScore = () => {
+            userScoreInc++;
+        }
+
+        const init = () => {
+            const increase = document.querySelector("#increase");
+            increase.addEventListener('click', incScore);
+            
+            totalScore = document.querySelector("#totalScore");
+            userScoreElement = document.querySelector("#userScore");
+            userScoreIncElement = document.querySelector("#userScoreInc");
+            
+            totalScore.innerText = "0";
+            
+            socket = io.connect();
+            
+            socket.on('connect', () => {
+                setInterval(generateScore, 1000);
+            });
+            
+            socket.on('updated', update);
+        }
+        
+        window.onload = init;
     
     </script>
 </head>
 <body>
-
+    <h1>Total Score: <span id="totalScore"></span></h1>
+    <h2>Your Generated Score: <span id="userScore"></span></h2>
+    <br>
+    <h2>Incrementation: <span id="userScoreInc"></span></h2>
+    <input id="increase" type='button' value="INCREASE"/>
 </body>
 </html>
